@@ -1,5 +1,9 @@
 //------------------------------------------------------------------------------
-import { publicToken, sceneUUID, charSceneUUID } from "./config.js";
+import {
+  publicToken,
+  mainSceneUUID,
+  characterControllerSceneUUID,
+} from "./config.js";
 
 //------------------------------------------------------------------------------
 window.addEventListener("load", InitApp);
@@ -8,96 +12,54 @@ window.addEventListener("load", InitApp);
 async function InitApp() {
   await SDK3DVerse.joinOrStartSession({
     userToken: publicToken,
-    sceneUUID: sceneUUID,
+    sceneUUID: mainSceneUUID,
     canvas: document.getElementById("display-canvas"),
-    maxDimension: 1920,
-    connectToEditor: true,
+    createDefaultCamera: false,
     startSimulation: "on-assets-loaded",
   });
 
-  await InitPlayer(charSceneUUID);
+  await InitFirstPersonController(characterControllerSceneUUID);
 }
 
 //------------------------------------------------------------------------------
-async function InitPlayer(characterSceneUUID) {
-  const { playerEntity, cameraEntity } = await SpawnPlayer(characterSceneUUID);
+async function InitFirstPersonController(charCtlSceneUUID) {
+  // To spawn an entity we need to create an EntityTempllate and specify the
+  // components we want to attach to it. In this case we only want a scene_ref
+  // that points to the character controller scene.
+  const playerTemplate = new SDK3DVerse.EntityTemplate();
+  playerTemplate.attachComponent("scene_ref", { value: charCtlSceneUUID });
 
-  AttachClientToScripts(playerEntity);
-  await AttachCameraToViewport(cameraEntity);
-}
+  // Passing null as parent entity will instantiate our new entity at the root
+  // of the main scene.
+  const parentEntity = null;
+  // Setting this option to true will ensure that our entity will be destroyed
+  // when the client is disconnected from the session, making sure we don't
+  // leave our 'dead' player body behind.
+  const deleteOnClientDisconnection = true;
+  // We don't want the player to be saved forever in the scene, so we
+  // instantiate a transient entity.
+  // Note that an entity template can be instantiated multiple times.
+  // Each instantiation results in a new entity.
+  const playerSceneEntity = await playerTemplate.instantiateTransientEntity(
+    "Player",
+    parentEntity,
+    deleteOnClientDisconnection
+  );
 
-//------------------------------------------------------------------------------
-async function SpawnPlayer(characterControllerSceneUUID) {
-  const playerTemplate = new EntityTemplate();
-  playerTemplate.attachComponent("scene_ref", {
-    value: characterControllerSceneUUID,
-  });
+  // The character controller scene is setup as having a single entity at its
+  // root which is the first person controller itself.
+  const firstPersonController = (await playerSceneEntity.getChildren())[0];
+  // Look for the first person camera in the children of the controller.
+  const children = await firstPersonController.getChildren();
+  const firstPersonCamera = children.find((child) =>
+    child.isAttached("camera")
+  );
 
-  const playerSceneEntity = await playerTemplate.spawn("Player", true);
-  const fpcEntity = (await playerSceneEntity.getChildren())[0];
-  const children = await SDK3DVerse.engineAPI.getEntityChildren(fpcEntity);
-  const cameraEntity = children.find((child) => child.isAttached("camera"));
+  // We need to assign the current client to the first person controller
+  // script which is attached to the firstPersonController entity.
+  // This allows the script to know which client inputs it should read.
+  SDK3DVerse.engineAPI.assignClientToScripts(firstPersonController);
 
-  return { playerEntity: fpcEntity, cameraEntity };
-}
-
-//------------------------------------------------------------------------------
-function AttachClientToScripts(playerEntity) {
-  const scriptUUID = Object.keys(
-    playerEntity.getComponent("script_map").elements
-  ).pop();
-
-  SDK3DVerse.engineAPI.attachToScript(playerEntity, scriptUUID);
-}
-
-//------------------------------------------------------------------------------
-async function AttachCameraToViewport(cameraEntity) {
-  const cameraComponent =
-    SDK3DVerse.engineAPI.cameraAPI.getDefaultCameraValues();
-
-  const viewports = [
-    {
-      id: 0,
-      left: 0,
-      top: 0,
-      width: 1,
-      height: 1,
-      camera: cameraEntity,
-      // Use the default_camera_component scene settings for the 3rd person
-      // camera of the player
-      defaultCameraValues: cameraComponent,
-    },
-  ];
-  await SDK3DVerse.setViewports(viewports);
-}
-
-//------------------------------------------------------------------------------
-// TO DELETE: This should be provided by the SDK
-//------------------------------------------------------------------------------
-class EntityTemplate {
-  entityTemplate = { debug_name: { value: "" } };
-
-  attachComponent(type, value) {
-    if (this.entityTemplate[type] === undefined) {
-      SDK3DVerse.utils.resolveComponentDependencies(this.entityTemplate, type);
-    }
-    this.entityTemplate[type] = value;
-  }
-
-  async spawn(instanceName = "unamed entity", unspawnOnUnload = false) {
-    this.entityTemplate.debug_name.value = instanceName;
-    const entity = await SDK3DVerse.engineAPI.spawnEntity(
-      null,
-      this.entityTemplate
-    );
-
-    if (unspawnOnUnload) {
-      window.onbeforeunload = () => {
-        SDK3DVerse.engineAPI.deleteEntities([this.entity]);
-        return null;
-      };
-    }
-
-    return entity;
-  }
+  // Finally set the first person camera as the main camera.
+  SDK3DVerse.setMainCamera(firstPersonCamera);
 }
