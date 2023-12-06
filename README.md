@@ -52,7 +52,7 @@ Every client that runs this application will either start a new session of the s
 
 ## Run it locally
 
-Replace the following values in [config.js](./config.js):
+Replace the following values in [config.js](https://github.com/3dverse/sample-first-person-controller/blob/main/config.js):
 
 - '%YOUR_PUBLIC_TOKEN%' by the public token of your application found in the "API Access" section.
 - '%YOUR_MAIN_SCENE_UUID%' by the UUID of the main scene generated in the Public folder of the "Asset browser" section.
