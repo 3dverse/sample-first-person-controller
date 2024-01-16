@@ -8,7 +8,7 @@
 
 ## Description
 
-Simple first person template application with character and camera controller. Character can be idle, walk, run, jump and emote depending on user inputs.
+Simple first person template application with character and camera controller. Character can can walk, run, jump, be idle or do emotes depending on user inputs.
 
 Functions with gamepad and mouse/keyboard.
 
@@ -26,7 +26,7 @@ Multiplayer.
 
 # How does it work?
 
-Every client that runs this application will either start a new session of the scene named 'Main Scene', or join an ongoing session if there is one running already. After 'Main Scene' is opened and the physics simulation is started, the application spawns the character. Every new client will appear as a character in the scene. For the best experience, limit the number of players to a maximum of 4.
+Every client that runs this application will either start a new session of the scene named 'Main Scene', or join an ongoing session if there is one. After 'Main Scene' is opened and the physics simulation is started, the application spawns the character. Every new client will appear as a character in the scene. Limit the number of players to a maximum of 4 for a better experience.
 
 ## Assets inside
 
