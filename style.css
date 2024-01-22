@@ -5,6 +5,10 @@
   border-width: 0;
 }
 
+* {
+  color: white;
+}
+
 @media (max-width: 790px) {
   html {
     --spacing: 1.5rem;
@@ -21,6 +25,36 @@ body {
   overflow: hidden;
 }
 
+.cta {
+  background:none;
+  border: 1px solid white;
+  border-radius: 20px;
+  padding: 0.75rem 1.5rem;
+  margin: 0 1rem;
+  cursor: pointer;
+}
+
+.cta:hover {
+  color: black;
+  background-color: rgb(255, 200, 0);
+  border-color: rgb(255, 200, 0);
+}
+
+#crosshair {
+  z-index:1;
+  position:absolute;
+  top:50%;
+  left:50%;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(0, 0, 0, 0.8);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/*------------------------------------------------*/
+/*---------            CANVAS            ---------*/
+/*------------------------------------------------*/
 .canvas-container {
   width: 100vw;
   height: 100dvh;
@@ -41,3 +75,192 @@ body {
 #display-canvas:focus-visible {
   outline: none;
 }
+
+/*------------------------------------------------*/
+/*---------        LOADING SCREEN        ---------*/
+/*------------------------------------------------*/
+#loading-screen {
+  visibility:hidden;
+  z-index:2;
+  position:absolute;
+  display:flex;
+  flex-direction: column;
+  justify-content:center;
+  align-items:center;
+  background: radial-gradient(
+    closest-side at center,
+    #0e151f 15%,
+    rgb(18, 22, 59) 32%, 
+    rgba(2,0,36,1) 70%
+  );
+  width:100%;
+  height:100%;
+
+  & img {
+    width: min(80vw, 80vh);
+    height:auto;
+    margin-bottom: 2rem;
+  }
+
+  & p {
+    color:white;
+    font-size: 1.5rem;
+    margin: 0;
+  }
+}
+
+#loading-screen.active {
+  visibility: visible;
+}
+
+#loading-screen.active:before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  opacity: 6%;
+  background: radial-gradient(
+    circle at center,
+    rgba(2, 0, 36, 0) 0%, 
+    rgb(215, 231, 70) 15%, 
+    rgba(2, 0, 36, 0) 35%
+  );
+  animation: colorChange 4s infinite ease;
+}
+
+#loading-screen.active:after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  opacity: 6%;
+  background: radial-gradient(
+    circle at center,
+    rgba(2, 0, 36, 0) 0%, 
+    rgb(231, 70, 70) 15%, 
+    rgba(2, 0, 36, 0) 35%
+  );
+  animation: colorChange 4s infinite ease;
+  animation-delay:0.5s;
+}
+
+@keyframes colorChange {
+  0% {
+    transform:scale(100%);
+    opacity: 6%;
+  }
+
+  35% {
+    transform:scale(700%);
+    opacity: 3%;
+  }
+  99.9% {
+    transform:scale(900%);
+    opacity: 0.3%;
+  }
+
+  100% {
+    transform:scale(100%);
+    opacity: 10%;
+  }
+ }
+
+/*------------------------------------------------*/
+/*---------            MODALS            ---------*/
+/*------------------------------------------------*/
+
+.modal-container {
+  visibility:hidden;
+  z-index:2;
+  position:absolute;
+  display:flex;
+  flex-direction: column;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  height:100%;
+  background-color: rgb(14,21,31,0.75);
+  color: white;
+
+  & h2 {
+    margin-top: 0;
+    text-align: center;
+  }
+
+  & .cta-container {
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+  }
+}
+
+.modal-container.active {
+  visibility:visible;
+}
+
+
+& #settings-modal, & #disconnected-modal, #control-key-editor {
+  background-color: rgb(14,21,31);
+  box-shadow: 0 0 5px rgba(4, 4, 6, 0.8);
+  border-radius: 15px;
+  padding: 2rem;
+}
+
+#settings-modal {
+  position:relative;
+
+  & button {
+    background: none;
+  }
+
+  & ul#controls {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  
+    & li {
+      margin: 0.5rem 0;
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  & #close {
+    position:absolute;
+    top:0;
+    right: 0;
+    background: none;
+    cursor: pointer;
+    padding:1rem;
+  }
+}
+
+#disconnected-modal p{
+  text-align: center;
+}
+
+.edit-action-keys-button {
+  color:white;
+  border: 1px solid white;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  width:50%;
+  height:100%;
+  cursor: pointer;
+}
+
+#control-key-input {
+  text-align: center;
+}
+
+
+
+
