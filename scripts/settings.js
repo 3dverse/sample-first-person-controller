@@ -1,14 +1,28 @@
 //------------------------------------------------------------------------------
 import {
+    characterControllerSceneUUID,
     characterControllerScriptUUID,
     clientData
 } from "../config.js";
 
 import { LockPointer } from "./utils.js";
 
-
 window.EditControl = EditControl;
 window.CancelControlKeyEdit = CancelControlKeyEdit;
+var specialKeys = {
+    " ": "SPACE",
+    "\r": "ENTER",
+    "\b": "BACKSPACE",
+    "\t": "TAB",
+    "\x10": "SHIFT",
+    "\x11": "CTRL",
+    "\x12": "ALT",
+    "\x14": "CAPSLOCK",
+    "&": "ARROW UP",
+    "(": "ARROW DOWN",
+    "%": "ARROW LEFT",
+    "'": "ARROW RIGHT",
+}
 
 //------------------------------------------------------------------------------
 export async function InitDeviceDetection() {
@@ -71,12 +85,15 @@ export async function AdjustDeviceSensitivity() {
         { sensitivity: newSensitivity }
     );
 
+    // This should be removed when setScriptInputValues() is fixed, it's just 
+    // that since setScriptInputValues doesn't return a promise, we must make 
+    // sure that the script inputs have been updated before reassignign client 
+    // to script.
+    await SDK3DVerse.engineAPI.findEntitiesByEUID(characterControllerSceneUUID); 
+
     // Reassign the client's inputs to the Asset Script of the character 
     // controller
-    const characterController = (await SDK3DVerse.engineAPI.findEntitiesByEUID(
-        "afa79d88-d206-4287-a022-68db7dddc0c0"
-        ))[0];
-    SDK3DVerse.engineAPI.assignClientToScripts(characterController);  
+    SDK3DVerse.engineAPI.assignClientToScripts(clientData.characterController);  
 }
 
 //------------------------------------------------------------------------------
@@ -128,12 +145,12 @@ async function HandleKeyDownControlEdit(event, element, controlsCaptureTimeout, 
         return;
     }
 
-    const newKey = "KEY_" + getLayoutAgnosticKeyCode(event);
+    const newKey =  "KEY_" + getLayoutAgnosticKeyCode(event);
     // If a new key is assigned to the action, we add it to the list of keys
     // and display it in the key editing popup.
     if(!(newActionKeys.includes(newKey))) {
         newActionKeys.push(newKey);
-        document.getElementById("control-key-input").innerHTML = newActionKeys.join(" + ");
+        document.getElementById("control-key-input").innerHTML = await generateActionKeysDisplay(newActionKeys);
     }
 
     // We reset the timeout to let more time to the user to add more keys.
@@ -171,10 +188,33 @@ async function replaceActionKeys(element, newActionKeys) {
     SDK3DVerse.actionMap.values[editingAction][editingIndex] = newActionKeys;
     SDK3DVerse.actionMap.propagate();
 
-    const innerHTML = newActionKeys.map(
-        key => String.fromCharCode(key.replace("KEY_", ''))
-    ).join(" + ");
-    element.innerHTML = innerHTML;
+    element.innerHTML = await generateActionKeysDisplay(newActionKeys);
+}
+
+//------------------------------------------------------------------------------
+async function generateActionKeysDisplay(actionKeys) {
+    let keysString = '';
+    for (const key of actionKeys) {
+        keysString += (await getLayoutKeyFromActionKey(key)) + " + ";
+    }
+    keysString = keysString.slice(0, -3);
+    // If multiple keys, keyString will be "Z + Q + ARROW UP" for example and 
+    // non keyboard agnostic.
+    return keysString;
+}
+
+//------------------------------------------------------------------------------
+async function getLayoutKeyFromActionKey(actionKey) {
+    const key = String.fromCharCode(parseInt(actionKey.replace("KEY_", '')));
+    if(Object.keys(specialKeys).includes(key)) {
+        return specialKeys[key];
+    }
+
+    const numericKey = parseInt(key);
+    if(!isNaN(numericKey)) {
+        return numericKey;
+    }
+    return (await getNonLayoutAgnosticKey("Key" + key)).toUpperCase();
 }
 
 //------------------------------------------------------------------------------
@@ -192,15 +232,21 @@ function getLayoutAgnosticKeyCode(event)
 }
 
 //------------------------------------------------------------------------------
+async function getNonLayoutAgnosticKey(layoutAgnosticKey) {
+    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap()
+    const nonLayoutAgnosticKey = keyboardLayoutMap.get(layoutAgnosticKey);
+    return nonLayoutAgnosticKey ? nonLayoutAgnosticKey : "Unknown Key";
+}
+
+//------------------------------------------------------------------------------
 export async function LoadControlKeySettings() {
     let keyValueHolders = document.getElementsByClassName("edit-action-keys-button");
-    let action, index, keys, keyValue;
-    Array.from(keyValueHolders).forEach((element) => {
+    let action, index, keys;
+    Array.from(keyValueHolders).forEach(async (element) => {
         action = element.getAttribute("data-action")
         index = element.getAttribute("data-keys-id")
         keys = SDK3DVerse.actionMap.values[action][parseInt(index)];
-        keyValue = keys.map(key => String.fromCharCode(key.replace("KEY_", ''))).join(" + ");
-        element.innerHTML = keyValue;
+        element.innerHTML = await generateActionKeysDisplay(keys);
     });
 }
 
@@ -254,7 +300,3 @@ export async function CloseSettingsModal() {
         console.error("Pointer lock not available");
     }
 }
-
-
-
-

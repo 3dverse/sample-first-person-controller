@@ -4,11 +4,17 @@ import {
   mainSceneUUID,
   characterControllerSceneUUID,
   clientData,
+  spawnPosition
 } from "../config.js";
 
 import { LockPointer } from "./utils.js";
 
-import { OpenSettingsModal, AdjustDeviceSensitivity, InitDeviceDetection, LoadControlKeySettings } from "./settings.js";
+import { 
+  InitDeviceDetection, 
+  LoadControlKeySettings,
+  AdjustDeviceSensitivity, 
+  OpenSettingsModal
+} from "./settings.js";
 
 //------------------------------------------------------------------------------
 window.addEventListener("load", InitApp);
@@ -87,7 +93,7 @@ async function InitFirstPersonController(canvas, charCtlSceneUUID) {
   // that points to the character controller scene.
   const playerTemplate = new SDK3DVerse.EntityTemplate();
   playerTemplate.attachComponent("scene_ref", { value: charCtlSceneUUID });
-
+  playerTemplate.attachComponent("local_transform", { position: spawnPosition });
   // Passing null as parent entity will instantiate our new entity at the root
   // of the main scene.
   const parentEntity = null;
