@@ -31,29 +31,19 @@
       <div id="settings-modal">
         <button id="close" type="button">X</button>
         <h2>Settings</h2>
-        <label for="sensitivity-slider">Mouse Sensitivity :</label>
-        <input type="range" min="0" max="100" value="30" id="sensitivity-slider">
-        <input type="hidden" id="device" value="mouse">
         <ul id="controls">
-          <li><p>Move Forward :</p><button class="edit-action-keys-button" data-action="MOVE_FORWARD" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>        
-          <li><p>Move Backward :</p><button class="edit-action-keys-button" data-action="MOVE_BACKWARD" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>
-          <li><p>Move Right :</p><button class="edit-action-keys-button" data-action="MOVE_RIGHT" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>
-          <li><p>Move Left :</p><button class="edit-action-keys-button" data-action="MOVE_LEFT" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>
-          <li><p>Jump :</p><button class="edit-action-keys-button" data-action="ACTION_1" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>
-          <li><p>Sprint :</p><button class="edit-action-keys-button" data-action="ACTION_6" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>
-          <li><p>Dance :</p><button class="edit-action-keys-button" data-action="ACTION_4" data-keys-id="0" onclick="EditControl(this)" type="button">NONE</button></li>
+          <li>
+            <label for="sensitivity-slider">Mouse Sensitivity :</label>
+            <input type="range" min="0" max="100" value="30" id="sensitivity-slider">
+          </li>
+          <li><p>Move Forward :</p><span class="action-keys" data-action="MOVE_FORWARD">NONE</span></li>        
+          <li><p>Move Backward :</p><span class="action-keys" data-action="MOVE_BACKWARD">NONE</span></li>
+          <li><p>Move Right :</p><span class="action-keys" data-action="MOVE_RIGHT">NONE</span></li>
+          <li><p>Move Left :</p><span class="action-keys" data-action="MOVE_LEFT">NONE</span></li>
+          <li><p>Jump :</p><span class="action-keys" data-action="JUMP">NONE</span></li>
+          <li><p>Sprint :</p><span class="action-keys" data-action="SPRINT">NONE</span></li>
+          <li><p>Dance :</p><span class="action-keys" data-action="DANCE">NONE</span></li>
         </ul>
-      </div>
-    </div>
-
-    <div class="modal-container">
-      <!-- CONTROL KEY EDITING POPUP -->
-      <div id="control-key-editor">
-        <p>Press keys to edit the control</p>
-        <p id="control-key-input"></p>
-        <div class="cta-container">
-          <button id="cancel-key-edit" class="cta" type="button" onclick="CancelControlKeyEdit()">Cancel</button>
-        </div>
       </div>
     </div>
 
@@ -64,7 +54,6 @@
         <p>Connection to the server has been lost.</p>
         <div class="cta-container">
           <button id="rejoin-session" class="cta" type="button">Reconnect</button>
-          <button id="create-new-session" class="cta" type="button">New Session</button>
         </div>
       </div>
     </div>

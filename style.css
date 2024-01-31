@@ -206,7 +206,7 @@ body {
 }
 
 
-& #settings-modal, & #disconnected-modal, #control-key-editor {
+& #settings-modal, & #disconnected-modal{
   background-color: rgb(14,21,31);
   box-shadow: 0 0 5px rgba(4, 4, 6, 0.8);
   border-radius: 15px;
@@ -215,10 +215,6 @@ body {
 
 #settings-modal {
   position:relative;
-
-  & button {
-    background: none;
-  }
 
   & ul#controls {
     list-style: none;
@@ -247,20 +243,16 @@ body {
   text-align: center;
 }
 
-.edit-action-keys-button {
+#sensitivity-slider {
+  padding: 0.5rem 0;
+}
+
+.action-keys {
   color:white;
   border: 1px solid white;
   border-radius: 5px;
   padding: 0.5rem 1rem;
   width:50%;
   height:100%;
-  cursor: pointer;
-}
-
-#control-key-input {
   text-align: center;
 }
-
-
-
-
