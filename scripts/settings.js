@@ -101,8 +101,8 @@ export async function AdjustDeviceSensitivity() {
     // that since setScriptInputValues doesn't return a promise, we must make 
     // sure that the script inputs have been updated before reassignign client 
     // to script.
-    await SDK3DVerse.engineAPI.findEntitiesByEUID(characterControllerSceneUUID); 
     await new Promise((resolve) => setTimeout(resolve, 100));
+    
     // Reassign the client's inputs to the Asset Script of the character 
     // controller
     SDK3DVerse.engineAPI.assignClientToScripts(window.characterController);  
