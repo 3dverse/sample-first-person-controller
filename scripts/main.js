@@ -41,7 +41,7 @@ async function InitApp() {
     }
 
     await SDK3DVerse.joinOrStartSession(sessionParameters);
-    
+
     // To spawn a character controller and store it in the clientData object
     // for easier access.
     characterController = await InitFirstPersonController(
@@ -138,7 +138,7 @@ function HandleClientDisconnection() {
 
 //------------------------------------------------------------------------------
 function ShowDisconnectedPopup() {
-    document.getElementById("reload-session").addEventListener('click', window.location.reload());
+    document.getElementById("reload-session").addEventListener('click', () => window.location.reload());
     document.getElementById("disconnected-modal").parentNode.classList.add('active');
 }
 
