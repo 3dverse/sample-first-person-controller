@@ -35,26 +35,13 @@ async function InitApp() {
         canvas: canvas,
         createDefaultCamera: false,
         startSimulation: "on-assets-loaded",
-        sessionId: localStorage.getItem("sessionId"),
         onFindingSession: () => ChangeLoadingInfo("Looking for sessions..."),
         onStartingStreamer: () => ChangeLoadingInfo("Starting streamer..."),
         onLoadingAssets: () => ChangeLoadingInfo("Loading assets..."),
     }
-    localStorage.removeItem("sessionId");
 
-    try{
-        await SDK3DVerse.joinOrStartSession(sessionParameters);
-    } catch (error) {
-        // If the previous session has been closed or that the user tries 
-        //to join a random session among the existing ones, we remove the 
-        // session id from the session parameters.
-        delete sessionParameters.sessionId;
-        await SDK3DVerse.joinOrStartSession(sessionParameters);
-    }
-
-    // We store the current session id in the clientData object.
-    sessionId = SDK3DVerse.webAPI.sessionId;
-
+    await SDK3DVerse.joinOrStartSession(sessionParameters);
+    
     // To spawn a character controller and store it in the clientData object
     // for easier access.
     characterController = await InitFirstPersonController(
@@ -151,14 +138,8 @@ function HandleClientDisconnection() {
 
 //------------------------------------------------------------------------------
 function ShowDisconnectedPopup() {
-    document.getElementById("rejoin-session").addEventListener('click', RejoinSession);
+    document.getElementById("reload-session").addEventListener('click', window.location.reload());
     document.getElementById("disconnected-modal").parentNode.classList.add('active');
-}
-
-//------------------------------------------------------------------------------
-function RejoinSession() {
-    localStorage.setItem("sessionId", sessionId);
-    window.location.reload()
 }
 
 //------------------------------------------------------------------------------
