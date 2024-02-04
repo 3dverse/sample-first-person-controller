@@ -26,7 +26,7 @@ if ('keyboard' in navigator && 'getLayoutMap' in navigator.keyboard) {
 }
 
 //------------------------------------------------------------------------------
-export async function InitControlKeySettings() {
+export function InitControlKeySettings() {
     const actionKeysElements = document.getElementsByClassName("action-keys");
     let action, displayedKeys;
     Array.from(actionKeysElements).forEach(async (element) => {
@@ -145,7 +145,7 @@ function ResetMouseDetection() {
 }
 
 //------------------------------------------------------------------------------
-export async function OpenSettingsModal() {
+export function OpenSettingsModal() {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.add('active');
     const close = document.getElementById("close");
@@ -153,7 +153,7 @@ export async function OpenSettingsModal() {
 }
 
 //------------------------------------------------------------------------------
-export async function CloseSettingsModal() {
+export function CloseSettingsModal() {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.remove('active');
     AdjustDeviceSensitivity();
