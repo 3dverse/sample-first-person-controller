@@ -1,17 +1,15 @@
 //------------------------------------------------------------------------------
 import {
-    characterControllerSceneUUID,
-} from "../config.js";
-
-import {
     LockPointer,
     RecoverPitchAndYawFromQuat,
-    UnlockPointer
+    UnlockPointer,
 } from "./utils.js";
 
 //------------------------------------------------------------------------------
+var characterController;
 var device = "mouse";
 const PHYSICAL_ACTION_KEYS = {
+    "LOOK_AROUND": ["LEFT CLICK", "MOUSE MOVE"],
     "MOVE_FORWARD": ["KeyW"],
     "MOVE_BACKWARD": ["KeyS"],
     "MOVE_LEFT": ["KeyA"],
@@ -28,25 +26,8 @@ if ('keyboard' in navigator && 'getLayoutMap' in navigator.keyboard) {
 }
 
 //------------------------------------------------------------------------------
-function GetActionKey(physicalActionKey) {
-    return physicalActionKey.replace("Key", "");
-}
-
-//------------------------------------------------------------------------------
-async function GetLayoutBasedActionKey(physicalActionKey) {
-    // For none layout affected keys, (Space, Shift, etc.)
-    if(!physicalActionKey.includes("Key")) {
-        return physicalActionKey;
-    }
-
-    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap()
-    const layoutActionKey = keyboardLayoutMap.get(physicalActionKey)
-    return layoutActionKey ? layoutActionKey.toUpperCase() : "UNKNOWN";
-}
-
-//------------------------------------------------------------------------------
 export async function InitControlKeySettings() {
-    let actionKeysElements = document.getElementsByClassName("action-keys");
+    const actionKeysElements = document.getElementsByClassName("action-keys");
     let action, displayedKeys;
     Array.from(actionKeysElements).forEach(async (element) => {
         action = element.getAttribute("data-action")     
@@ -70,9 +51,9 @@ export async function AdjustDeviceSensitivity() {
     // mouse and ~x.0 for gamepad within the current asset script for character 
     // controller camera management.
     let newSensitivity;
-    if ( device ===  "gamepad" ){
+    if(device ===  "gamepad"){
         newSensitivity = sensitivitySetting / 5;
-    } else { //if ( device === "mouse" ){
+    } else { //if(device === "mouse"){
         newSensitivity = sensitivitySetting / 100;
     }
 
@@ -87,8 +68,8 @@ export async function AdjustDeviceSensitivity() {
     // We update the inputs of the Asset Script attached to the character 
     // controller, specifically the sensitivity. Asset Scripts inputs are 
     // accessed through the "script_map" component of an entity.
-    const characterControllerScriptUUID = Object.keys(window.characterController.getComponent("script_map").elements)[0];
-    window.characterController.setScriptInputValues(
+    const characterControllerScriptUUID = Object.keys(characterController.getComponent("script_map").elements)[0];
+    characterController.setScriptInputValues(
         characterControllerScriptUUID, 
         {
             pitch: pitch,
@@ -105,7 +86,7 @@ export async function AdjustDeviceSensitivity() {
     
     // Reassign the client's inputs to the Asset Script of the character 
     // controller
-    SDK3DVerse.engineAPI.assignClientToScripts(window.characterController);  
+    SDK3DVerse.engineAPI.assignClientToScripts(characterController);  
 }
 
 //------------------------------------------------------------------------------
@@ -114,15 +95,32 @@ function GetSensitivity() {
 }
 
 //------------------------------------------------------------------------------
+function GetActionKey(physicalActionKey) {
+    return physicalActionKey.replace("Key", "");
+}
+
+//------------------------------------------------------------------------------
+async function GetLayoutBasedActionKey(physicalActionKey) {
+    // For none layout affected keys, (Space, Shift, etc.)
+    if(!physicalActionKey.includes("Key")) {
+        return physicalActionKey;
+    }
+
+    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap()
+    const layoutActionKey = keyboardLayoutMap.get(physicalActionKey)
+    return layoutActionKey ? layoutActionKey.toUpperCase() : "UNKNOWN";
+}
+
+//------------------------------------------------------------------------------
 export function InitDeviceDetection() {
     ResetGamepadDetection();
 }
 
 //------------------------------------------------------------------------------
-async function ResetGamepadDetection() {
+function ResetGamepadDetection() {
     window.addEventListener(
         'gamepadconnected', 
-        async () => {
+        () => {
             device = 'gamepad';
             AdjustDeviceSensitivity();
             LockPointer();
@@ -133,10 +131,10 @@ async function ResetGamepadDetection() {
 }
 
 //------------------------------------------------------------------------------
-async function ResetMouseDetection() {
+function ResetMouseDetection() {
     window.addEventListener(
         'mousemove', 
-        async ()=> { 
+        () => { 
             device = 'mouse';
             AdjustDeviceSensitivity();
             UnlockPointer();
@@ -162,4 +160,9 @@ export async function CloseSettingsModal() {
     SDK3DVerse.enableInputs();
     const close = document.getElementById("close");
     close.removeEventListener('click', CloseSettingsModal); 
+}
+
+//------------------------------------------------------------------------------
+export function SetCharacterController(value) {
+    characterController = value;
 }

@@ -12,24 +12,25 @@ import {
   InitDeviceDetection, 
   InitControlKeySettings,
   AdjustDeviceSensitivity, 
-  OpenSettingsModal
+  OpenSettingsModal,
+  SetCharacterController
 } from "./settings.js";
 
+
 //------------------------------------------------------------------------------
-window.characterController = "HEY";
-var sessionId;
+
 
 window.addEventListener("load", InitApp);
 
 //------------------------------------------------------------------------------
 async function InitApp() {
-    let canvas = document.getElementById("display-canvas");
+    const canvas = document.getElementById("display-canvas");
 
     // We can add parameters to the session creation. To make our loading
     // screen more dynamic, we pass callbacks to the onFindingSession, 
     // onStartingStreamer and onLoadingAssets parameters which will be executed
     // at key moment during the session creation/joining.
-    let sessionParameters = {
+    const sessionParameters = {
         userToken: publicToken,
         sceneUUID: mainSceneUUID,
         canvas: canvas,
@@ -42,23 +43,25 @@ async function InitApp() {
 
     await SDK3DVerse.joinOrStartSession(sessionParameters);
 
-    // To spawn a character controller and store it in the clientData object
-    // for easier access.
-    characterController = await InitFirstPersonController(
+    // To spawn a character controller we need to instantiate the 
+    // "characterControllerSceneUUID" subscene into our main scene.
+    let tmpCharacterController = await InitFirstPersonController(
         characterControllerSceneUUID
     );
-    window.characterController = characterController;
+    // The characterController is a global variable in settings.js, we use 
+    // its setter to store the character controller initialized and associated 
+    // with the current user. 
+    SetCharacterController(tmpCharacterController);
 
     InitDeviceDetection();
     AdjustDeviceSensitivity();
     
     // Hiding the loading screen once the experience becomes playable.
     HideLoadingScreen();
+
     InitPointerLockEvents();
-    
     InitControlKeySettings();
     HandleClientDisconnection();
-
 }
 
 //------------------------------------------------------------------------------
@@ -144,7 +147,7 @@ function ShowDisconnectedPopup() {
 
 //------------------------------------------------------------------------------
 function InitPointerLockEvents() {
-    let canvas = document.getElementById("display-canvas");
+    const canvas = document.getElementById("display-canvas");
     canvas.addEventListener('mousedown', LockPointer);
 
     // If the user leaves the pointerlock, we open the settings popup and
