@@ -206,7 +206,7 @@ body {
 }
 
 
-& #settings-modal, & #disconnected-modal{
+#settings-modal, #disconnected-modal, #inactivity-modal {
   background-color: rgb(14,21,31);
   box-shadow: 0 0 5px rgba(4, 4, 6, 0.8);
   border-radius: 15px;

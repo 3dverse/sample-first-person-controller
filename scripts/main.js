@@ -123,18 +123,23 @@ function HandleClientDisconnection() {
     // kicked after 30 seconds of inactivity. Setting an inactivity callback 
     // with a 30 seconds cooldown allows us to open a popup when the user gets
     // disconnected.
-    SDK3DVerse.setInactivityCallback(() => {
-        setTimeout(() => { 
-            ShowDisconnectedPopup() 
-        }, 30 * 1000); 
-    });
+    SDK3DVerse.setInactivityCallback(ShowInactivityPopup);
 
     // The following does the same but in case the disconnection is 
     // requested by the server.
-    SDK3DVerse.notifier.on("onConnectionClosed", () => { 
-        SDK3DVerse.setInactivityCallback(()=>{});
-        ShowDisconnectedPopup()
-    });
+    SDK3DVerse.notifier.on("onConnectionClosed", ShowDisconnectedPopup);
+}
+
+//------------------------------------------------------------------------------
+function ShowInactivityPopup() {
+    document.getElementById("resume").addEventListener('click', CloseInactivityPopup);
+    document.getElementById("inactivity-modal").parentNode.classList.add('active');
+}
+
+//------------------------------------------------------------------------------
+function CloseInactivityPopup() {
+    document.getElementById("resume").removeEventListener('click', CloseInactivityPopup);
+    document.getElementById("inactivity-modal").parentNode.classList.remove('active');
 }
 
 //------------------------------------------------------------------------------
