@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
 import {
-    LockPointer,
-    RecoverPitchAndYawFromQuat,
-    UnlockPointer,
+    lockPointer,
+    recoverPitchAndYawFromQuat,
+    unlockPointer,
 } from "./utils.js";
 
 //------------------------------------------------------------------------------
@@ -22,18 +22,18 @@ const PHYSICAL_ACTION_KEYS = {
 // If the browser supports keyboard layout detection, we display layout based 
 // keys instead of physical keys.
 if ('keyboard' in navigator && 'getLayoutMap' in navigator.keyboard) {
-    GetActionKey = GetLayoutBasedActionKey;
+    getActionKey = getLayoutBasedActionKey;
 }
 
 //------------------------------------------------------------------------------
-export function InitControlKeySettings() {
+export function initControlKeySettings() {
     const actionKeysElements = document.getElementsByClassName("action-keys");
     let action, displayedKeys;
     Array.from(actionKeysElements).forEach(async (element) => {
         action = element.getAttribute("data-action")     
         displayedKeys = '';
         for (const key of PHYSICAL_ACTION_KEYS[action]) {
-            displayedKeys += (await GetActionKey(key)) + " + ";
+            displayedKeys += (await getActionKey(key)) + " + ";
         }
         displayedKeys = displayedKeys.slice(0, -3);
         element.innerHTML = displayedKeys;
@@ -41,9 +41,9 @@ export function InitControlKeySettings() {
 }
 
 //------------------------------------------------------------------------------
-export async function AdjustDeviceSensitivity() {
+export async function adjustDeviceSensitivity() {
     // We recover the device and the sensitivity from the settings modal inputs.
-    const sensitivitySetting = GetSensitivity();
+    const sensitivitySetting = getSensitivity();
     
     // We adjust the sensitivity depending on the device. The joysticks on 
     // gamepads produce less sensitive values than the mouse. The new 
@@ -63,7 +63,7 @@ export async function AdjustDeviceSensitivity() {
     // Camera orientation can be obtained from the viewport orientation.
     const activeViewports = SDK3DVerse.engineAPI.cameraAPI.getActiveViewports();
     const viewportOrientation = activeViewports[0].getTransform().orientation;
-    const { pitch, yaw } = RecoverPitchAndYawFromQuat(viewportOrientation);
+    const { pitch, yaw } = recoverPitchAndYawFromQuat(viewportOrientation);
 
     // We update the inputs of the Asset Script attached to the character 
     // controller, specifically the sensitivity. Asset Scripts inputs are 
@@ -90,17 +90,17 @@ export async function AdjustDeviceSensitivity() {
 }
 
 //------------------------------------------------------------------------------
-function GetSensitivity() {
+function getSensitivity() {
     return document.getElementById("sensitivity-slider").value;
 }
 
 //------------------------------------------------------------------------------
-function GetActionKey(physicalActionKey) {
+function getActionKey(physicalActionKey) {
     return physicalActionKey.replace("Key", "");
 }
 
 //------------------------------------------------------------------------------
-async function GetLayoutBasedActionKey(physicalActionKey) {
+async function getLayoutBasedActionKey(physicalActionKey) {
     // For none layout affected keys, (Space, Shift, etc.)
     if(!physicalActionKey.includes("Key")) {
         return physicalActionKey;
@@ -112,57 +112,57 @@ async function GetLayoutBasedActionKey(physicalActionKey) {
 }
 
 //------------------------------------------------------------------------------
-export function InitDeviceDetection() {
-    ResetGamepadDetection();
+export function initDeviceDetection() {
+    resetGamepadDetection();
 }
 
 //------------------------------------------------------------------------------
-function ResetGamepadDetection() {
+function resetGamepadDetection() {
     window.addEventListener(
         'gamepadconnected', 
         () => {
             device = 'gamepad';
-            AdjustDeviceSensitivity();
-            LockPointer();
-            ResetMouseDetection();
+            adjustDeviceSensitivity();
+            lockPointer();
+            resetMouseDetection();
         }, 
         { once: true } 
     );
 }
 
 //------------------------------------------------------------------------------
-function ResetMouseDetection() {
+function resetMouseDetection() {
     window.addEventListener(
         'mousemove', 
         () => { 
             device = 'mouse';
-            AdjustDeviceSensitivity();
-            UnlockPointer();
-            ResetGamepadDetection();
+            adjustDeviceSensitivity();
+            unlockPointer();
+            resetGamepadDetection();
         },
         { once: true }
     );
 }
 
 //------------------------------------------------------------------------------
-export function OpenSettingsModal() {
+export function openSettingsModal() {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.add('active');
     const close = document.getElementById("close");
-    close.addEventListener('click', CloseSettingsModal);
+    close.addEventListener('click', closeSettingsModal);
 }
 
 //------------------------------------------------------------------------------
-export function CloseSettingsModal() {
+export function closeSettingsModal() {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.remove('active');
-    AdjustDeviceSensitivity();
+    adjustDeviceSensitivity();
     SDK3DVerse.enableInputs();
     const close = document.getElementById("close");
-    close.removeEventListener('click', CloseSettingsModal); 
+    close.removeEventListener('click', closeSettingsModal); 
 }
 
 //------------------------------------------------------------------------------
-export function SetCharacterController(value) {
+export function setCharacterController(value) {
     characterController = value;
 }

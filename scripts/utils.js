@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
-export async function LockPointer() {
+export async function lockPointer() {
     const canvas = document.getElementById("display-canvas");
-    canvas.removeEventListener('mousedown', LockPointer);
+    canvas.removeEventListener('mousedown', lockPointer);
 
     canvas.requestPointerLock = (
         canvas.requestPointerLock 
@@ -13,13 +13,13 @@ export async function LockPointer() {
     // user inputs are detected through Web "onkeydown" Event Listeners
     // attached to the canvas.
     canvas.focus();
-    canvas.addEventListener('mouseup', UnlockPointer);
+    canvas.addEventListener('mouseup', unlockPointer);
 }
 
 //------------------------------------------------------------------------------
-export async function UnlockPointer() {
+export async function unlockPointer() {
     const canvas = document.getElementById("display-canvas");
-    canvas.removeEventListener('mouseup', UnlockPointer);
+    canvas.removeEventListener('mouseup', unlockPointer);
     
     document.exitPointerLock = (
       document.exitPointerLock 
@@ -27,11 +27,11 @@ export async function UnlockPointer() {
         || document.webkitExitPointerLock
     );
     await document.exitPointerLock();
-    canvas.addEventListener('mousedown', LockPointer);
+    canvas.addEventListener('mousedown', lockPointer);
 }
 
 //------------------------------------------------------------------------------
-export function RecoverPitchAndYawFromQuat(quaternion) {
+export function recoverPitchAndYawFromQuat(quaternion) {
     const eulerAngle = SDK3DVerse.utils.quaternionToEuler(quaternion);
 
     let yaw, pitch;

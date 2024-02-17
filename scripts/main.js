@@ -6,22 +6,22 @@ import {
   spawnPosition
 } from "../config.js";
 
-import { LockPointer } from "./utils.js";
+import { lockPointer } from "./utils.js";
 
 import { 
-  InitDeviceDetection, 
-  InitControlKeySettings,
-  AdjustDeviceSensitivity, 
-  OpenSettingsModal,
-  SetCharacterController
+  initDeviceDetection, 
+  initControlKeySettings,
+  adjustDeviceSensitivity, 
+  openSettingsModal,
+  setCharacterController
 } from "./settings.js";
 
 
 //------------------------------------------------------------------------------
-window.addEventListener("load", InitApp);
+window.addEventListener("load", initApp);
 
 //------------------------------------------------------------------------------
-async function InitApp() {
+async function initApp() {
     const canvas = document.getElementById("display-canvas");
 
     // We can add parameters to the session creation. To make our loading
@@ -34,36 +34,36 @@ async function InitApp() {
         canvas: canvas,
         createDefaultCamera: false,
         startSimulation: "on-assets-loaded",
-        onFindingSession: () => ChangeLoadingInfo("Looking for sessions..."),
-        onStartingStreamer: () => ChangeLoadingInfo("Starting streamer..."),
-        onLoadingAssets: () => ChangeLoadingInfo("Loading assets..."),
+        onFindingSession: () => changeLoadingInfo("Looking for sessions..."),
+        onStartingStreamer: () => changeLoadingInfo("Starting streamer..."),
+        onLoadingAssets: () => changeLoadingInfo("Loading assets..."),
     }
 
     await SDK3DVerse.joinOrStartSession(sessionParameters);
 
     // To spawn a character controller we need to instantiate the 
     // "characterControllerSceneUUID" subscene into our main scene.
-    let tmpCharacterController = await InitFirstPersonController(
+    let tmpCharacterController = await initFirstPersonController(
         characterControllerSceneUUID
     );
     // The characterController is a global variable in settings.js, we use 
     // its setter to store the character controller initialized and associated 
     // with the current user. 
-    SetCharacterController(tmpCharacterController);
+    setCharacterController(tmpCharacterController);
 
-    InitDeviceDetection();
-    AdjustDeviceSensitivity();
+    initDeviceDetection();
+    adjustDeviceSensitivity();
     
     // Hiding the loading screen once the experience becomes playable.
-    HideLoadingScreen();
+    hideLoadingScreen();
 
-    InitPointerLockEvents();
-    InitControlKeySettings();
-    HandleClientDisconnection();
+    initPointerLockEvents();
+    initControlKeySettings();
+    handleClientDisconnection();
 }
 
 //------------------------------------------------------------------------------
-async function InitFirstPersonController(charCtlSceneUUID) {
+async function initFirstPersonController(charCtlSceneUUID) {
     // To spawn an entity we need to create an EntityTemplate and specify the
     // components we want to attach to it. In this case we only want a scene_ref
     // that points to the character controller scene.
@@ -108,57 +108,57 @@ async function InitFirstPersonController(charCtlSceneUUID) {
 }
 
 //------------------------------------------------------------------------------
-function ChangeLoadingInfo(newInfo) {
+function changeLoadingInfo(newInfo) {
     document.getElementById("loading-info").innerHTML = newInfo;
 }
 
 //------------------------------------------------------------------------------
-function HideLoadingScreen() {
+function hideLoadingScreen() {
     document.getElementById("loading-screen").classList.remove('active');
 }
 
 //------------------------------------------------------------------------------
-function HandleClientDisconnection() {
+function handleClientDisconnection() {
     // Users are considered inactive after 5 minutes of inactivity and are
     // kicked after 30 seconds of inactivity. Setting an inactivity callback 
     // with a 30 seconds cooldown allows us to open a popup when the user gets
     // disconnected.
-    SDK3DVerse.setInactivityCallback(ShowInactivityPopup);
+    SDK3DVerse.setInactivityCallback(showInactivityPopup);
 
     // The following does the same but in case the disconnection is 
     // requested by the server.
-    SDK3DVerse.notifier.on("onConnectionClosed", ShowDisconnectedPopup);
+    SDK3DVerse.notifier.on("onConnectionClosed", showDisconnectedPopup);
 }
 
 //------------------------------------------------------------------------------
-function ShowInactivityPopup() {
-    document.getElementById("resume").addEventListener('click', CloseInactivityPopup);
+function showInactivityPopup() {
+    document.getElementById("resume").addEventListener('click', closeInactivityPopup);
     document.getElementById("inactivity-modal").parentNode.classList.add('active');
 }
 
 //------------------------------------------------------------------------------
-function CloseInactivityPopup() {
-    document.getElementById("resume").removeEventListener('click', CloseInactivityPopup);
+function closeInactivityPopup() {
+    document.getElementById("resume").removeEventListener('click', closeInactivityPopup);
     document.getElementById("inactivity-modal").parentNode.classList.remove('active');
 }
 
 //------------------------------------------------------------------------------
-function ShowDisconnectedPopup() {
+function showDisconnectedPopup() {
     document.getElementById("reload-session").addEventListener('click', () => window.location.reload());
     document.getElementById("disconnected-modal").parentNode.classList.add('active');
 }
 
 //------------------------------------------------------------------------------
-function InitPointerLockEvents() {
+function initPointerLockEvents() {
     const canvas = document.getElementById("display-canvas");
-    canvas.addEventListener('mousedown', LockPointer);
+    canvas.addEventListener('mousedown', lockPointer);
 
     // If the user leaves the pointerlock, we open the settings popup and
     // disable their influence over the character controller.
     document.addEventListener('keydown', (event) => {
         if(event.code === 'Escape') {
             SDK3DVerse.disableInputs();
-            OpenSettingsModal();
+            openSettingsModal();
         }
     });
     
@@ -169,7 +169,7 @@ function InitPointerLockEvents() {
     document.addEventListener('pointerlockerror', async () => {
         if (document.pointerLockElement === null) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            await LockPointer();
+            await lockPointer();
             SDK3DVerse.enableInputs();
         }
     });
