@@ -6,7 +6,6 @@ import {
 } from "./utils.js";
 
 //------------------------------------------------------------------------------
-var characterController;
 var device = "mouse";
 const PHYSICAL_ACTION_KEYS = {
     "LOOK_AROUND": ["LEFT CLICK", "MOUSE MOVE"],
@@ -41,7 +40,7 @@ export function initControlKeySettings() {
 }
 
 //------------------------------------------------------------------------------
-export async function adjustDeviceSensitivity() {
+export async function adjustDeviceSensitivity(characterController) {
     // We recover the device and the sensitivity from the settings modal inputs.
     const sensitivitySetting = getSensitivity();
     
@@ -112,57 +111,50 @@ async function getLayoutBasedActionKey(physicalActionKey) {
 }
 
 //------------------------------------------------------------------------------
-export function initDeviceDetection() {
-    resetGamepadDetection();
+export function initDeviceDetection(characterController) {
+    resetGamepadDetection(characterController);
 }
 
 //------------------------------------------------------------------------------
-function resetGamepadDetection() {
+function resetGamepadDetection(characterController) {
     window.addEventListener(
         'gamepadconnected', 
         () => {
             device = 'gamepad';
-            adjustDeviceSensitivity();
+            adjustDeviceSensitivity(characterController);
             lockPointer();
-            resetMouseDetection();
+            resetMouseDetection(characterController);
         }, 
         { once: true } 
     );
 }
 
 //------------------------------------------------------------------------------
-function resetMouseDetection() {
+function resetMouseDetection(characterController) {
     window.addEventListener(
         'mousemove', 
         () => { 
             device = 'mouse';
-            adjustDeviceSensitivity();
+            adjustDeviceSensitivity(characterController);
             unlockPointer();
-            resetGamepadDetection();
+            resetGamepadDetection(characterController);
         },
         { once: true }
     );
 }
 
 //------------------------------------------------------------------------------
-export function openSettingsModal() {
+export function openSettingsModal(characterController) {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.add('active');
     const close = document.getElementById("close");
-    close.addEventListener('click', closeSettingsModal);
+    close.addEventListener('click', () => closeSettingsModal(characterController), { once: true });
 }
 
 //------------------------------------------------------------------------------
-export function closeSettingsModal() {
+export function closeSettingsModal(characterController) {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.remove('active');
-    adjustDeviceSensitivity();
+    adjustDeviceSensitivity(characterController);
     SDK3DVerse.enableInputs();
-    const close = document.getElementById("close");
-    close.removeEventListener('click', closeSettingsModal); 
-}
-
-//------------------------------------------------------------------------------
-export function setCharacterController(value) {
-    characterController = value;
 }

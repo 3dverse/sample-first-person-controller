@@ -12,8 +12,7 @@ import {
   initDeviceDetection, 
   initControlKeySettings,
   adjustDeviceSensitivity, 
-  openSettingsModal,
-  setCharacterController
+  openSettingsModal
 } from "./settings.js";
 
 
@@ -43,21 +42,17 @@ async function initApp() {
 
     // To spawn a character controller we need to instantiate the 
     // "characterControllerSceneUUID" subscene into our main scene.
-    let tmpCharacterController = await initFirstPersonController(
+    const characterController = await initFirstPersonController(
         characterControllerSceneUUID
     );
-    // The characterController is a global variable in settings.js, we use 
-    // its setter to store the character controller initialized and associated 
-    // with the current user. 
-    setCharacterController(tmpCharacterController);
 
-    initDeviceDetection();
-    adjustDeviceSensitivity();
+    initDeviceDetection(characterController);
+    adjustDeviceSensitivity(characterController);
     
     // Hiding the loading screen once the experience becomes playable.
     hideLoadingScreen();
 
-    initPointerLockEvents();
+    initPointerLockEvents(characterController);
     initControlKeySettings();
     handleClientDisconnection();
 }
@@ -149,7 +144,7 @@ function showDisconnectedPopup() {
 }
 
 //------------------------------------------------------------------------------
-function initPointerLockEvents() {
+function initPointerLockEvents(characterController) {
     const canvas = document.getElementById("display-canvas");
     canvas.addEventListener('mousedown', lockPointer);
 
@@ -158,7 +153,7 @@ function initPointerLockEvents() {
     document.addEventListener('keydown', (event) => {
         if(event.code === 'Escape') {
             SDK3DVerse.disableInputs();
-            openSettingsModal();
+            openSettingsModal(characterController);
         }
     });
     
