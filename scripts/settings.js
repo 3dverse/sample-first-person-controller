@@ -1,12 +1,11 @@
 //------------------------------------------------------------------------------
 import {
     lockPointer,
-    recoverPitchAndYawFromQuat,
     unlockPointer,
 } from "./utils.js";
 
 //------------------------------------------------------------------------------
-var device = "mouse";
+let device = "mouse";
 const PHYSICAL_ACTION_KEYS = {
     "LOOK_AROUND": ["LEFT CLICK", "MOUSE MOVE"],
     "MOVE_FORWARD": ["KeyW"],
@@ -25,6 +24,9 @@ if ('keyboard' in navigator && 'getLayoutMap' in navigator.keyboard) {
 }
 
 //------------------------------------------------------------------------------
+// We iterate over the action keys elements and set the DOM Elements from 
+// the settings modal to the corresponding keys based on the keyboard layout
+// map if available.
 export function initControlKeySettings() {
     const actionKeysElements = document.getElementsByClassName("action-keys");
     let action, displayedKeys;
@@ -56,14 +58,6 @@ export async function adjustDeviceSensitivity(characterController) {
         newSensitivity = sensitivitySetting / 100;
     }
 
-    // By default, the camera orientation is reset when calling 
-    // "setScriptInputValues()".  We pass the current pitch and yaw of the 
-    // camera to the Asset Script to keep the camera orientation.
-    // Camera orientation can be obtained from the viewport orientation.
-    const activeViewports = SDK3DVerse.engineAPI.cameraAPI.getActiveViewports();
-    const viewportOrientation = activeViewports[0].getTransform().orientation;
-    const { pitch, yaw } = recoverPitchAndYawFromQuat(viewportOrientation);
-
     // We update the inputs of the Asset Script attached to the character 
     // controller, specifically the sensitivity. Asset Scripts inputs are 
     // accessed through the "script_map" component of an entity.
@@ -71,21 +65,9 @@ export async function adjustDeviceSensitivity(characterController) {
     characterController.setScriptInputValues(
         characterControllerScriptUUID, 
         {
-            pitch: pitch,
-            yaw: yaw,
             sensitivity: newSensitivity,
         }
     );
-
-    // This should be removed when setScriptInputValues() is fixed, it's just 
-    // that since setScriptInputValues doesn't return a promise, we must make 
-    // sure that the script inputs have been updated before reassignign client 
-    // to script.
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    
-    // Reassign the client's inputs to the Asset Script of the character 
-    // controller
-    SDK3DVerse.engineAPI.assignClientToScripts(characterController);  
 }
 
 //------------------------------------------------------------------------------
@@ -112,43 +94,41 @@ async function getLayoutBasedActionKey(physicalActionKey) {
 
 //------------------------------------------------------------------------------
 export function initDeviceDetection(characterController) {
-    resetGamepadDetection(characterController);
+    detectGamepad(characterController);
 }
 
 //------------------------------------------------------------------------------
-function resetGamepadDetection(characterController) {
+function detectGamepad(characterController) {
     window.addEventListener(
         'gamepadconnected', 
         () => {
             device = 'gamepad';
             adjustDeviceSensitivity(characterController);
             lockPointer();
-            resetMouseDetection(characterController);
+            detectMouse(characterController);
         }, 
         { once: true } 
     );
 }
 
 //------------------------------------------------------------------------------
-function resetMouseDetection(characterController) {
+function detectMouse(characterController) {
     window.addEventListener(
         'mousemove', 
         () => { 
             device = 'mouse';
             adjustDeviceSensitivity(characterController);
             unlockPointer();
-            resetGamepadDetection(characterController);
+            detectGamepad(characterController);
         },
         { once: true }
     );
 }
 
 //------------------------------------------------------------------------------
-export function openSettingsModal(characterController) {
+export function openSettingsModal() {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.add('active');
-    const close = document.getElementById("close");
-    close.addEventListener('click', () => closeSettingsModal(characterController), { once: true });
 }
 
 //------------------------------------------------------------------------------
@@ -156,5 +136,4 @@ export function closeSettingsModal(characterController) {
     const settingsContainer = document.getElementById("settings-modal").parentNode;
     settingsContainer.classList.remove('active');
     adjustDeviceSensitivity(characterController);
-    SDK3DVerse.enableInputs();
 }

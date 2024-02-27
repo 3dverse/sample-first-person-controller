@@ -12,7 +12,8 @@ import {
   initDeviceDetection, 
   initControlKeySettings,
   adjustDeviceSensitivity, 
-  openSettingsModal
+  openSettingsModal,
+  closeSettingsModal
 } from "./settings.js";
 
 
@@ -23,21 +24,13 @@ window.addEventListener("load", initApp);
 async function initApp() {
     const canvas = document.getElementById("display-canvas");
 
-    // We can add parameters to the session creation. To make our loading
-    // screen more dynamic, we pass callbacks to the onFindingSession, 
-    // onStartingStreamer and onLoadingAssets parameters which will be executed
-    // at key moment during the session creation/joining.
     const sessionParameters = {
         userToken: publicToken,
         sceneUUID: mainSceneUUID,
         canvas: canvas,
         createDefaultCamera: false,
         startSimulation: "on-assets-loaded",
-        onFindingSession: () => changeLoadingInfo("Looking for sessions..."),
-        onStartingStreamer: () => changeLoadingInfo("Starting streamer..."),
-        onLoadingAssets: () => changeLoadingInfo("Loading assets..."),
-    }
-
+    };
     await SDK3DVerse.joinOrStartSession(sessionParameters);
 
     // To spawn a character controller we need to instantiate the 
@@ -48,11 +41,9 @@ async function initApp() {
 
     initDeviceDetection(characterController);
     adjustDeviceSensitivity(characterController);
-    
-    // Hiding the loading screen once the experience becomes playable.
-    hideLoadingScreen();
 
-    initPointerLockEvents(characterController);
+    initPointerLockEvents();
+    initSettingsModalEvents(characterController);
     initControlKeySettings();
     handleClientDisconnection();
 }
@@ -103,16 +94,6 @@ async function initFirstPersonController(charCtlSceneUUID) {
 }
 
 //------------------------------------------------------------------------------
-function changeLoadingInfo(newInfo) {
-    document.getElementById("loading-info").innerHTML = newInfo;
-}
-
-//------------------------------------------------------------------------------
-function hideLoadingScreen() {
-    document.getElementById("loading-screen").classList.remove('active');
-}
-
-//------------------------------------------------------------------------------
 function handleClientDisconnection() {
     // Users are considered inactive after 5 minutes of inactivity and are
     // kicked after 30 seconds of inactivity. Setting an inactivity callback 
@@ -144,19 +125,10 @@ function showDisconnectedPopup() {
 }
 
 //------------------------------------------------------------------------------
-function initPointerLockEvents(characterController) {
+function initPointerLockEvents() {
     const canvas = document.getElementById("display-canvas");
     canvas.addEventListener('mousedown', lockPointer);
 
-    // If the user leaves the pointerlock, we open the settings popup and
-    // disable their influence over the character controller.
-    document.addEventListener('keydown', (event) => {
-        if(event.code === 'Escape') {
-            SDK3DVerse.disableInputs();
-            openSettingsModal(characterController);
-        }
-    });
-    
     // Web browsers have a safety mechanism preventing the pointerlock to be
     // instantly requested after being naturally exited, if the user tries to
     // relock the pointer too quickly, we wait a second before requesting 
@@ -165,7 +137,30 @@ function initPointerLockEvents(characterController) {
         if (document.pointerLockElement === null) {
             await new Promise(resolve => setTimeout(resolve, 1000));
             await lockPointer();
-            SDK3DVerse.enableInputs();
+        }
+    });
+}
+
+//------------------------------------------------------------------------------
+function initSettingsModalEvents(characterController) {
+    const closeSettingsButton = document.getElementById("close-settings");
+    closeSettingsButton.addEventListener('click', () => {
+        closeSettingsModal(characterController);
+        SDK3DVerse.enableInputs();
+    });
+
+    // If the user leaves the pointerlock, we open the settings popup and
+    // disable their influence over the character controller.
+    document.addEventListener('keydown', (event) => {
+        if(event.code === 'Escape') {
+            const settingsContainer = document.getElementById("settings-modal").parentNode;
+            if(settingsContainer.classList.contains('active')) {
+                closeSettingsModal(characterController);
+                SDK3DVerse.enableInputs();
+            } else {
+                SDK3DVerse.disableInputs();
+                openSettingsModal();
+            }
         }
     });
 }

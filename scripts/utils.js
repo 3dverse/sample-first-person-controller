@@ -29,22 +29,3 @@ export async function unlockPointer() {
     await document.exitPointerLock();
     canvas.addEventListener('mousedown', lockPointer);
 }
-
-//------------------------------------------------------------------------------
-export function recoverPitchAndYawFromQuat(quaternion) {
-    const eulerAngle = SDK3DVerse.utils.quaternionToEuler(quaternion);
-
-    let yaw, pitch;
-    if((eulerAngle[2] < 90) && (eulerAngle[2] > -90)) {
-        pitch = eulerAngle[0];
-        yaw = 180 + eulerAngle[1];
-    } else {
-        if(eulerAngle[0] > 0) {
-            pitch = eulerAngle[0] - 180;
-        } else {
-            pitch = eulerAngle[0] + 180;
-        }
-        yaw = -eulerAngle[1];
-    }
-    return {yaw:yaw, pitch:pitch}
-  }
