@@ -1,11 +1,9 @@
-* {
+*, 
+::after,
+::before{
   box-sizing: border-box;
   border-width: 0;
   color: white;
-}
-
-:root {
-  --color-accent: #ffc800;
 }
 
 @media (max-width: 790px) {
