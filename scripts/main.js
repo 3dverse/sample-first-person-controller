@@ -88,7 +88,7 @@ async function initFirstPersonController(charCtlSceneUUID) {
     SDK3DVerse.engineAPI.assignClientToScripts(firstPersonController);
 
     // Finally set the first person camera as the main camera.
-    await SDK3DVerse.setMainCamera(firstPersonCamera);
+    await SDK3DVerse.engineAPI.cameraAPI.setMainCamera(firstPersonCamera);
 
     return firstPersonController;
 }

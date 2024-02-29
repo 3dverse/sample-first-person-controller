@@ -31,7 +31,7 @@ export function initControlKeySettings() {
     const actionKeysElements = document.getElementsByClassName("action-keys");
     let action, displayedKeys;
     Array.from(actionKeysElements).forEach(async (element) => {
-        action = element.getAttribute("data-action")     
+        action = element.getAttribute("data-action");  
         displayedKeys = '';
         for (const key of PHYSICAL_ACTION_KEYS[action]) {
             displayedKeys += (await getActionKey(key)) + " + ";
@@ -42,7 +42,7 @@ export function initControlKeySettings() {
 }
 
 //------------------------------------------------------------------------------
-export async function adjustDeviceSensitivity(characterController) {
+export function adjustDeviceSensitivity(characterController) {
     // We recover the device and the sensitivity from the settings modal inputs.
     const sensitivitySetting = getSensitivity();
     
@@ -87,8 +87,8 @@ async function getLayoutBasedActionKey(physicalActionKey) {
         return physicalActionKey;
     }
 
-    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap()
-    const layoutActionKey = keyboardLayoutMap.get(physicalActionKey)
+    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap();
+    const layoutActionKey = keyboardLayoutMap.get(physicalActionKey);
     return layoutActionKey ? layoutActionKey.toUpperCase() : "UNKNOWN";
 }
 
