@@ -29,3 +29,16 @@ export async function unlockPointer() {
     await document.exitPointerLock();
     canvas.addEventListener('mousedown', lockPointer);
 }
+
+//------------------------------------------------------------------------------
+export function getGamepadsCount() {
+    let gamepadCount = 0;
+    navigator.getGamepads().forEach(
+        (gamepad) => { 
+            if(gamepad !== null){
+                gamepadCount++
+            } 
+        }
+    );
+    return gamepadCount;
+}

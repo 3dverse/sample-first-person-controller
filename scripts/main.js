@@ -126,9 +126,6 @@ function showDisconnectedPopup() {
 
 //------------------------------------------------------------------------------
 function initPointerLockEvents() {
-    const canvas = document.getElementById("display-canvas");
-    canvas.addEventListener('mousedown', lockPointer);
-
     // Web browsers have a safety mechanism preventing the pointerlock to be
     // instantly requested after being naturally exited, if the user tries to
     // relock the pointer too quickly, we wait a second before requesting 
