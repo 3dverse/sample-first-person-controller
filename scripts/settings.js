@@ -1,7 +1,7 @@
 //------------------------------------------------------------------------------
 import {
     lockPointer,
-    unlockPointer,
+    getGamepadsCount
 } from "./utils.js";
 
 //------------------------------------------------------------------------------
@@ -16,6 +16,7 @@ const PHYSICAL_ACTION_KEYS = {
     "JUMP": ["SPACE"],
     "SPRINT": ["SHIFT"],
 }
+const GAMEPAD_DETECTION_DEADZONE = 0.2;
 
 // If the browser supports keyboard layout detection, we display layout based 
 // keys instead of physical keys.
@@ -31,7 +32,7 @@ export function initControlKeySettings() {
     const actionKeysElements = document.getElementsByClassName("action-keys");
     let action, displayedKeys;
     Array.from(actionKeysElements).forEach(async (element) => {
-        action = element.getAttribute("data-action")     
+        action = element.getAttribute("data-action");  
         displayedKeys = '';
         for (const key of PHYSICAL_ACTION_KEYS[action]) {
             displayedKeys += (await getActionKey(key)) + " + ";
@@ -42,7 +43,7 @@ export function initControlKeySettings() {
 }
 
 //------------------------------------------------------------------------------
-export async function adjustDeviceSensitivity(characterController) {
+export function adjustDeviceSensitivity(characterController) {
     // We recover the device and the sensitivity from the settings modal inputs.
     const sensitivitySetting = getSensitivity();
     
@@ -87,41 +88,76 @@ async function getLayoutBasedActionKey(physicalActionKey) {
         return physicalActionKey;
     }
 
-    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap()
-    const layoutActionKey = keyboardLayoutMap.get(physicalActionKey)
+    const keyboardLayoutMap = await navigator.keyboard.getLayoutMap();
+    const layoutActionKey = keyboardLayoutMap.get(physicalActionKey);
     return layoutActionKey ? layoutActionKey.toUpperCase() : "UNKNOWN";
 }
 
 //------------------------------------------------------------------------------
 export function initDeviceDetection(characterController) {
+    detectMouse(characterController);
     detectGamepad(characterController);
 }
 
 //------------------------------------------------------------------------------
 function detectGamepad(characterController) {
     window.addEventListener(
-        'gamepadconnected', 
+        'gamepadconnected',
         () => {
-            device = 'gamepad';
-            adjustDeviceSensitivity(characterController);
-            lockPointer();
-            detectMouse(characterController);
-        }, 
-        { once: true } 
+            if(getGamepadsCount() === 1){
+                // When the first gamepad is connected, it means the last 
+                // detectMouse() didn't activate detectGamepadActions(). 
+                detectGamepadActions(characterController);
+            }
+        }
+    );
+    window.addEventListener(
+        'gamepaddisconnected',
+        () => {
+            if(getGamepadsCount() === 0){
+                // When the last gamepad is disconnected, we force the 
+                // detectGamepadActions loop to stop.
+                device = 'gamepad';
+            }
+        }
     );
 }
 
 //------------------------------------------------------------------------------
+async function detectGamepadActions(characterController) {
+    let gamepads;
+    while(device !== 'gamepad')
+    {
+        gamepads = navigator.getGamepads();
+        for (const gamepad of gamepads){
+            if(!gamepad) continue;
+            for (const axis of gamepad?.axes){
+                if(Math.abs(axis) > GAMEPAD_DETECTION_DEADZONE)
+                {
+                    device = 'gamepad';
+                    adjustDeviceSensitivity(characterController);
+                    return;
+                }
+            }
+        }
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+}
+
+//------------------------------------------------------------------------------
 function detectMouse(characterController) {
-    window.addEventListener(
-        'mousemove', 
+    const canvas = document.getElementById("display-canvas");
+    canvas.addEventListener(
+        'mousedown', 
         () => { 
+            lockPointer();
+            if( device === 'mouse') return;
             device = 'mouse';
             adjustDeviceSensitivity(characterController);
-            unlockPointer();
-            detectGamepad(characterController);
-        },
-        { once: true }
+            if(getGamepadsCount() > 0){
+                detectGamepadActions(characterController);
+            }
+        }
     );
 }
 
