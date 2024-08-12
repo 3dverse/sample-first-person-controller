@@ -33,18 +33,16 @@ if ('keyboard' in navigator && 'getLayoutMap' in navigator.keyboard) {
 // We iterate over the action keys elements and set the DOM Elements from 
 // the settings modal to the corresponding keys based on the keyboard layout
 // map if available.
-export function initControlKeySettings() {
+export async function initControlKeySettings() {
     const actionKeysElements = document.getElementsByClassName("action-keys");
-    let action, displayedKeys;
-    Array.from(actionKeysElements).forEach(async (element) => {
+    let action, actionKeysPromises, actionKeys, displayedKeys;
+    for(const element of actionKeysElements){
         action = element.getAttribute("data-action");  
-        displayedKeys = '';
-        for (const key of PHYSICAL_ACTION_KEYS[action]) {
-            displayedKeys += (await getActionKey(key)) + " + ";
-        }
-        displayedKeys = displayedKeys.slice(0, -3);
-        element.innerHTML = displayedKeys;
-    });
+        actionKeysPromises = PHYSICAL_ACTION_KEYS[action].map(getActionKey);
+        actionKeys = await Promise.all(actionKeysPromises);
+        displayedKeys = actionKeys.join(' + ');
+        element.textContent = displayedKeys;
+    };
 }
 
 //------------------------------------------------------------------------------
