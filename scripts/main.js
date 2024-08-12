@@ -38,10 +38,10 @@ async function initApp() {
     const characterController = await initFirstPersonController(
         characterControllerSceneUUID
     );
-
+    adjustDeviceSensitivity("mouse", characterController);
+    canvas.addEventListener("mousedown", lockPointer, { once: true });
+    
     initDeviceDetection(characterController);
-    adjustDeviceSensitivity(characterController);
-
     initPointerLockEvents();
     initSettingsModalEvents(characterController);
     initControlKeySettings();
