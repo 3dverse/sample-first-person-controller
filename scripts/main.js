@@ -1,19 +1,19 @@
 //------------------------------------------------------------------------------
 import {
-  publicToken,
-  mainSceneUUID,
-  characterControllerSceneUUID,
-  spawnPosition
+    publicToken,
+    mainSceneUUID,
+    characterControllerSceneUUID,
+    spawnPosition
 } from "../config.js";
 
 import { lockPointer } from "./utils.js";
 
 import { 
-  initDeviceDetection, 
-  initControlKeySettings,
-  adjustDeviceSensitivity, 
-  openSettingsModal,
-  closeSettingsModal
+    initDeviceDetection, 
+    initControlKeySettings,
+    adjustDeviceSensitivity, 
+    openSettingsModal,
+    closeSettingsModal
 } from "./settings.js";
 
 
@@ -38,10 +38,10 @@ async function initApp() {
     const characterController = await initFirstPersonController(
         characterControllerSceneUUID
     );
-
+    adjustDeviceSensitivity("mouse", characterController);
+    canvas.addEventListener("mousedown", lockPointer, { once: true });
+    
     initDeviceDetection(characterController);
-    adjustDeviceSensitivity(characterController);
-
     initPointerLockEvents();
     initSettingsModalEvents(characterController);
     initControlKeySettings();
@@ -126,9 +126,6 @@ function showDisconnectedPopup() {
 
 //------------------------------------------------------------------------------
 function initPointerLockEvents() {
-    const canvas = document.getElementById("display-canvas");
-    canvas.addEventListener('mousedown', lockPointer);
-
     // Web browsers have a safety mechanism preventing the pointerlock to be
     // instantly requested after being naturally exited, if the user tries to
     // relock the pointer too quickly, we wait a second before requesting 
